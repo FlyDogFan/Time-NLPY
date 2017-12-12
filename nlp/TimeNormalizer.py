@@ -15,19 +15,23 @@ from TimeUnit import TimeUnit
 
 # 时间表达式识别的主要工作类
 class TimeNormalizer:
-    def __init__(self, path='../resource/reg.pkl', isPreferFuture=True):
+    def __init__(self, pattern, holi_solar, holi_lunar, isPreferFuture=True):
         self.isPreferFuture = isPreferFuture
-        with open(path, 'rb') as f:
-            self.pattern = pickle.load(f)
+        self.isTimeSpan = False
+        self.timeSpan = ''
+        self.pattern = pattern
+        self.holi_solar = holi_solar
+        self.holi_lunar = holi_lunar
 
-    def parse(self, target):
+    def parse(self, target, timeBase=arrow.now()):
         """
         TimeNormalizer的构造方法，timeBase取默认的系统当前时间
+        :param timeBase: 基准时间点
         :param target: 待分析字符串
         :return: 时间单元数组
         """
         self.target = target
-        self.timeBase = arrow.now().format('YYYY-M-D-H-m-s')
+        self.timeBase = arrow.get(timeBase).format('YYYY-M-D-H-m-s')
         self.oldTimeBase = self.timeBase
         self.__preHandling()
         self.timeToken = self.__timeEx()

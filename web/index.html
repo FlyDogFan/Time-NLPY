@@ -1,0 +1,103 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="shortcut icon" href="logo.ico" type="image/x-icon">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <!--<link rel="icon" href="../../favicon.ico">-->
+
+    <title>Url提取正文api演示</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="http://192.168.100.200:8081/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <script src="http://cdn.bootcss.com/jquery/1.12.1/jquery.js"></script> 
+    <script>
+function copy2s()
+{
+  document.getElementById('source').value = document.getElementById('examples').innerHTML;
+}
+var time1=0
+function timmer(){
+  time1+=0.5;
+  document.getElementById('qair_result').innerHTML = '正在载入中,您已等待 '+time1+'秒'
+}
+
+function get_qair_result()
+{   
+  var source = document.forms.input.source.value;
+  if (source){
+    var response = jQuery.ajax({
+      //url: 'url2text.php?mode='+ex_mode+'&url='+source,
+      async:  'True',
+      url: 'ars',
+      type: 'GET',
+      data:{'query':source, 'basetime':'2013-02-28 16:30:29'},
+      //数据加载前调用的方法 beforeSend()
+      beforeSend: function(data){
+        document.getElementById('res_mark').innerHTML='结果'
+        //这里判断，如果没有加载数据，会显示loading        
+        if(data.readyState == 0){
+          t1=setInterval("timmer()",500);
+        }
+      },
+      error: function(data){
+        document.getElementById('qair_result').innerHTML = '抱歉,数据加载失败'
+      },
+      complete:function(data){
+      },
+      success:function(response){
+        var res=JSON.parse(response);
+        console.log(res);
+        document.getElementById('qair_result').innerHTML = '<font  size="4" color="red"><strong>结果</font></strong><br>'+res["res"].replace(/\n/g,"\<br\>")+"<br>";
+        document.getElementById('res_mark').innerHTML='结果(共耗时'+time1+'秒)'
+            clearInterval(t1);
+            time1 = 0
+            }
+            })
+  }else if(!source){
+    alert('source is NaN');
+  }
+}
+    </script>
+  </head>
+
+  <body>
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+      </div>
+    </div>
+
+    <div class="jumbotron">
+      <div class="container">
+        <div style='padding:30px'>
+        </div>
+        <form id='input' onsubmit='get_qair_result(); return false;'>
+          <div class="input-group ">
+            <span class="input-group-addon">输入时间表达</span>
+            <input type="text"  style="width:70%" class="form-control" id='source' placeholder="输入时间表达.....">&nbsp;
+            <button type="submit" class="btn btn-default">转换</button>
+            </div>
+        </form>
+        <div style='padding:5px'>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-heading"><strong>举例: </strong> 
+            <button type="button" style = "position:right:0;" onclick="copy2s()">复制</button>
+          </div>
+          <div class="panel-body" id='examples'>Hi，all.13年二月二十八日下午四点三十分二十九秒到六点半开会</div>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-heading" id ='res_mark'>结果</div>
+          <div class="panel-body" id='qair_result'>
+            ..
+          </div>
+        </div>
+    </div>
+  </body>
+</html>

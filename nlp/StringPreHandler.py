@@ -86,26 +86,12 @@ class StringPreHandler:
         for m in match:
             group = m.group()
             s = group.split(u"十")
-            s = filter(None, s)
             num = 0
-            if len(s) == 0:
-                num += 10
-            elif len(s) == 1:
-                ten = int(s[0])
-                if ten == 0:
-                    num += 10
-                else:
-                    num += ten * 10
-            elif len(s) == 2:
-                if s[0] == '':
-                    num += 10
-                else:
-                    ten = int(s[0])
-                    if ten == 0:
-                        num += 10
-                    else:
-                        num += ten * 10
-                num += int(s[1])
+            ten = cls.strToInt(s[0])
+            if ten == 0:
+                ten = 1
+            unit = cls.strToInt(s[1])
+            num = ten * 10 + unit
             target = pattern.sub(str(num), target, 1)
 
         pattern = re.compile(u"0?[1-9]百[0-9]?[0-9]?")
@@ -165,25 +151,33 @@ class StringPreHandler:
         :param s: 大写数字
         :return: 对应的整形数，如果不是数字返回-1
         """
-        if (s == '零') or (s == '0'):
+        if (s == u'零') or (s == '0'):
             return 0
-        elif (s == '一') or (s == '1'):
+        elif (s == u'一') or (s == '1'):
             return 1
-        elif (s == '二') or (s == '两') or (s == '2'):
+        elif (s == u'二') or (s == u'两') or (s == '2'):
             return 2
-        elif (s == '三') or (s == '3'):
+        elif (s == u'三') or (s == '3'):
             return 3
-        elif (s == '四') or (s == '4'):
+        elif (s == u'四') or (s == '4'):
             return 4
-        elif (s == '五') or (s == '5'):
+        elif (s == u'五') or (s == '5'):
             return 5
-        elif (s == '六') or (s == '6'):
+        elif (s == u'六') or (s == '6'):
             return 6
-        elif (s == '七') or (s == '天') or (s == '日') or (s == '末') or (s == '7'):
+        elif (s == u'七') or (s == u'天') or (s == u'日') or (s == u'末') or (s == '7'):
             return 7
-        elif (s == '八') or (s == '8'):
+        elif (s == u'八') or (s == '8'):
             return 8
-        elif (s == '九') or (s == '9'):
+        elif (s == u'九') or (s == '9'):
             return 9
         else:
             return -1
+
+    @classmethod
+    def strToInt(cls, s):
+        try:
+            res = int(s)
+        except:
+            res = 0
+        return res
