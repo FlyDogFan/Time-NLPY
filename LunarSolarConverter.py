@@ -48,6 +48,15 @@ def SolarFromInt(g):
 
 
 class LunarSolarConverter:
+    #####################################################################################
+    # 1888~2111年农历数据表
+    # 农历数据 每个元素的存储格式如下：
+    #   16~13    12          11~0
+    #  闰几月 闰月日数  1~12月份农历日数(大小月)
+    # 注：1、bit0表示农历1月份日数，为1表示30天，为0表示29天。bit1表示农历2月份日数，依次类推。
+    #     2、bit12表示闰月日数，1为30天，0为29天。bit16~bit13表示第几月是闰月(注：为0表示该年无闰月)
+    # 数据来源参考: http://data.weather.gov.hk/gts/time/conversion1_text_c.htm
+    #####################################################################################
     lunar_month_days = [1887, 0x1694, 0x16aa, 0x4ad5, 0xab6, 0xc4b7, 0x4ae, 0xa56, 0xb52a,
                         0x1d2a, 0xd54, 0x75aa, 0x156a, 0x1096d, 0x95c, 0x14ae, 0xaa4d, 0x1a4c, 0x1b2a, 0x8d55,
                         0xad4, 0x135a, 0x495d,
@@ -80,7 +89,10 @@ class LunarSolarConverter:
                         0x1a4c, 0x11d26, 0x1aa4, 0x1b54, 0xcd6a, 0xada, 0x95c, 0x949d, 0x149a, 0x1a2a, 0x5b25,
                         0x1aa4, 0xfb52,
                         0x16b4, 0xaba, 0xa95b, 0x936, 0x1496, 0x9a4b, 0x154a, 0x136a5, 0xda4, 0x15ac]
-
+    # 额外添加数据，方便快速计算阴历转阳历 每个元素的存储格式如下：
+    #    12~7         6~5    4~0
+    #  离元旦多少天  春节月  春节日
+    #####################################################################################
     solar_1_1 = [1887, 0xec04c, 0xec23f, 0xec435, 0xec649, 0xec83e, 0xeca51, 0xecc46, 0xece3a,
                  0xed04d, 0xed242, 0xed436, 0xed64a, 0xed83f, 0xeda53, 0xedc48, 0xede3d, 0xee050, 0xee244, 0xee439,
                  0xee64d,
@@ -200,10 +212,11 @@ class LunarSolarConverter:
 
 if __name__ == '__main__':
     converter = LunarSolarConverter()
-    solar = Solar(2088, 1, 25)
+    solar = Solar(2111, 1, 25)
     pprint(vars(solar))
     lunar = converter.SolarToLunar(solar)
     pprint(vars(lunar))
     solar = converter.LunarToSolar(lunar)
     pprint(vars(solar))
+    print len(converter.solar_1_1)
     print "Done"

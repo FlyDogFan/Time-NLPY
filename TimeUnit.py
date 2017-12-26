@@ -7,9 +7,13 @@
 import regex as re
 import arrow
 import copy
+import json
 from TimePoint import TimePoint
-from util.RangeTimeEnum import RangeTimeEnum
-from util.LunarSolarConverter import LunarSolarConverter, Solar, Lunar
+from RangeTimeEnum import RangeTimeEnum
+try:
+    from LunarSolarConverter.LunarSolarConverter import *
+except:
+    from LunarSolarConverter import *
 
 
 # 时间语句分析
@@ -61,6 +65,8 @@ class TimeUnit:
                 if self.tp.tunit[i] < 0:
                     tunit[i] = 0
             seconds = tunit[3] * 3600 + tunit[4] * 60 + tunit[5]
+            if seconds == 0 and days == 0:
+                self.normalizer.invalidSpan = True
             self.normalizer.timeSpan = self.genSpan(days, seconds)
             return
 

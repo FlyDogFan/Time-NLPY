@@ -7,21 +7,42 @@
 import pickle
 import regex as re
 import arrow
+import json
+import os
 
 from StringPreHandler import StringPreHandler
 from TimePoint import TimePoint
 from TimeUnit import TimeUnit
 
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
+
 
 # 时间表达式识别的主要工作类
 class TimeNormalizer:
-    def __init__(self, pattern, holi_solar, holi_lunar, isPreferFuture=True):
+    def __init__(self, isPreferFuture=True):
         self.isPreferFuture = isPreferFuture
-        self.isTimeSpan = False
-        self.timeSpan = ''
-        self.pattern = pattern
-        self.holi_solar = holi_solar
-        self.holi_lunar = holi_lunar
+        self.pattern, self.holi_solar, self.holi_lunar = self.init()
+
+    def init(self):
+        fpath = os.path.dirname(__file__) + '/resource/reg.pkl'
+        try:
+            with open(fpath, 'rb') as f:
+                pattern = pickle.load(f)
+        except:
+            with open(os.path.dirname(__file__) + '/resource/regex.txt', 'r') as f:
+                content = f.read()
+            p = re.compile(unicode(content))
+            with open(fpath, 'wb') as f:
+                pickle.dump(p, f)
+            with open(fpath, 'rb') as f:
+                pattern = pickle.load(f)
+        with open(os.path.dirname(__file__) + '/resource/holi_solar.json', 'rb') as f:
+            holi_solar = json.load(f)
+        with open(os.path.dirname(__file__) + '/resource/holi_lunar.json', 'rb') as f:
+            holi_lunar = json.load(f)
+        return pattern, holi_solar, holi_lunar
 
     def parse(self, target, timeBase=arrow.now()):
         """
@@ -30,11 +51,32 @@ class TimeNormalizer:
         :param target: 待分析字符串
         :return: 时间单元数组
         """
-        self.target = target
+        self.isTimeSpan = False
+        self.invalidSpan = False
+        self.timeSpan = ''
+        self.target = unicode(target)
         self.timeBase = arrow.get(timeBase).format('YYYY-M-D-H-m-s')
         self.oldTimeBase = self.timeBase
         self.__preHandling()
         self.timeToken = self.__timeEx()
+        dic = {}
+        res = self.timeToken
+        if self.isTimeSpan:
+            if self.invalidSpan:
+                dic['error'] = 'no time pattern could be extracted.'
+            else:
+                dic['type'] = 'timedelta'
+                dic['timedelta'] = self.timeSpan
+        else:
+            if len(res) == 0:
+                dic['error'] = 'no time pattern could be extracted.'
+            elif len(res) == 1:
+                dic['type'] = 'timestamp'
+                dic['timestamp'] = res[0].time.format("YYYY-MM-DD HH:mm:ss")
+            else:
+                dic['type'] = 'timespan'
+                dic['timespan'] = [res[0].time.format("YYYY-MM-DD HH:mm:ss"), res[1].time.format("YYYY-MM-DD HH:mm:ss")]
+        return json.dumps(dic)
 
     def __preHandling(self):
         """
